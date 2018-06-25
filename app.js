@@ -1,3 +1,4 @@
+const el = e => document.querySelector(e);
 let _updateReady = (sw) => {
 	UIkit.modal.confirm('New Version Available')
 	     .then(() => {
@@ -39,3 +40,15 @@ if ('serviceWorker' in navigator) {
 		window.location.reload()
 	})
 }
+(() => {
+	fetch('https://free.currencyconverterapi.com/api/v5/countries').then(res => res.json()).then(res => {
+			let html = '';
+			for (let country of Object.values(res.results)) {
+				console.log(country);
+				html += `<option value="${country.currencyId}">${country.currencySymbol} ${country.currencyName}</option>`;
+			}
+			el("#currency-1").insertAdjacentHTML('afterbegin', html);
+			el("#currency-2").insertAdjacentHTML('afterbegin', html);
+		}
+	);
+})();

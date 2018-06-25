@@ -1,9 +1,9 @@
 const version = 'v2';
-const coreCache = `core-${version}`;
-const curreciesCache = `currencies-${version}`;
+
 const assetsCache = `assets-${version}`;
 const coreCacheurls = [
 	'uikit.min.css',
+	'/index.html',
 	'app.js',
 	'app.css',
 	'uikit.min.js'
@@ -17,7 +17,7 @@ const addToCache = (cacheName, req, res) =>
 
 self.addEventListener('install', event => {
 	event.waitUntil(
-		caches.open(coreCache)
+		caches.open(assetsCache)
 		      .then(cache => {
 			      cache.addAll(coreCacheurls)
 			           .then(() => {
@@ -50,14 +50,25 @@ self.addEventListener('fetch', (event) => {
 	/*
 	HTML Requests
 	 */
-	// if (headers.indexOf('text/html') === -1) {
-	// 	if (requestUrl.origin === location.origin) {
-	// 		if (requestUrl.pathname === '/') {
-	// 			event.respondWith(caches.match('/skeleton'));
-	// 			return
-	// 		}
-	// 	}
-	// }
+	if (headers.indexOf('text/html') !== -1) {
+		//Page Skeleton
+		if (requestUrl.origin === location.origin) {
+			if (requestUrl.pathname === '/') {
+				event.respondWith(caches.match('/index.html'));
+				return;
+			}
+		}
+
+		event.respondWith(
+			caches.match(request).then(response => {
+				return response || fetch(request).then(res => {
+						addToCache(assetsCache, request, res.clone());
+						return res;
+					}
+				)
+			})
+		)
+	}
 	// if (requestUrl.origin === location.origin) {
 	// 	if (requestUrl.pathname === '/') {
 	// 		event.respondWith(caches.match('/skeleton'));
@@ -79,18 +90,18 @@ self.addEventListener('message', event => {
 	}
 });
 
-// self.addEventListener('activate', event => {
-// 	event.waitUntil(
-// 		caches.keys().then(
-// 			cachesNames => {
-// 				return Promise.all(
-// 					cachesNames.filter(cacheName => {
-// 						return cacheName.startsWith('currencies-') && cacheName !== coreCache
-// 					}).map(cacheName => {
-// 						return caches.delete(cacheName)
-// 					})
-// 				)
-// 			}
-// 		)
-// 	)
-// })
+self.addEventListener('activate', event => {
+	event.waitUntil(
+		caches.keys().then(
+			cachesNames => {
+				return Promise.all(
+					cachesNames.filter(cacheName => {
+						return cacheName.startsWith('assets-') && cacheName !== assetsCache
+					}).map(cacheName => {
+						return caches.delete(cacheName)
+					})
+				)
+			}
+		)
+	)
+})
