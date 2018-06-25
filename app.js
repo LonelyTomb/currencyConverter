@@ -1,4 +1,62 @@
 const el = e => document.querySelector(e);
+const insertHTML = (e) => {
+
+}
+const getFromCurrencyName = () => {
+	return el("#fromCurrency").value;
+};
+const getToCurrencyName = () => {
+	return el("#toCurrency").value;
+};
+const getFromCurrencyId = () => {
+	return el("#fromCurrency").value;
+};
+const getToCurrencyId = () => {
+	return el("#toCurrency").value;
+};
+const getFromCurrencyValue = () => {
+	return el("#fromCurrencyValue").value;
+};
+const getToCurrencyValue = () => {
+	return el("#toCurrencyValue").value;
+};
+
+const convertCurrency = (amount, fromCurrency, toCurrency, cb) => {
+
+	fromCurrency = encodeURIComponent(fromCurrency);
+	toCurrency = encodeURIComponent(toCurrency);
+	const query = fromCurrency + '_' + toCurrency;
+	const url = 'https://free.currencyconverterapi.com/api/v5/convert?q='
+		+ query + '&compact=ultra';
+
+	fetch(url).then(res => res.json);
+	// https.get(url, function(res){
+	//     var body = '';
+	//
+	//     res.on('data', function(chunk){
+	//         body += chunk;
+	//     });
+	//
+	//     res.on('end', function(){
+	//         try {
+	//           var jsonObj = JSON.parse(body);
+	//
+	//           var val = jsonObj[query];
+	//           if (val) {
+	//             var total = val * amount;
+	//             cb(null, Math.round(total * 100) / 100);
+	//           } else {
+	//             var err = new Error("Value not found for " + query);
+	//             console.log(err);
+	//             cb(err);
+	//           }
+	//         } catch(e) {
+	//           console.log("Parse error: ", e);
+	//           cb(e);
+	//         }
+
+}
+
 let _updateReady = (sw) => {
 	UIkit.modal.confirm('New Version Available')
 	     .then(() => {
@@ -47,8 +105,19 @@ if ('serviceWorker' in navigator) {
 				console.log(country);
 				html += `<option value="${country.currencyId}">${country.currencySymbol} ${country.currencyName}</option>`;
 			}
-			el("#currency-1").insertAdjacentHTML('afterbegin', html);
-			el("#currency-2").insertAdjacentHTML('afterbegin', html);
+			el("#fromCurrency").insertAdjacentHTML('afterbegin', html);
+			el("#toCurrency").insertAdjacentHTML('afterbegin', html);
+			html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;
+			el('.results').innerText = html;
+
+			el("#fromCurrency").addEventListener('change', () => {
+				html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;
+				el('.results').innerText = html;
+			});
+			el("#toCurrency").addEventListener('change', () => {
+				html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;
+				el('.results').innerText = html;
+			})
 		}
 	);
 })();

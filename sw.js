@@ -1,10 +1,10 @@
-const version = 'v2';
+const version = 'v4';
 
 const assetsCache = `assets-${version}`;
 const coreCacheurls = [
 	'uikit.min.css',
-	'/index.html',
 	'app.js',
+	'/index.html',
 	'app.css',
 	'uikit.min.js'
 ];
@@ -54,21 +54,22 @@ self.addEventListener('fetch', (event) => {
 		//Page Skeleton
 		if (requestUrl.origin === location.origin) {
 			if (requestUrl.pathname === '/') {
-				event.respondWith(caches.match('/index.html'));
-				return;
+				return event.respondWith(caches.match('/index.html')) || fetch(request);
 			}
+		}else{
+			event.respondWith(
+				caches.match(request).then(response => {
+					return response || fetch(request).then(res => {
+							addToCache(assetsCache, request, res.clone());
+							return res;
+						}
+					)
+				})
+			)
+				}
 		}
 
-		event.respondWith(
-			caches.match(request).then(response => {
-				return response || fetch(request).then(res => {
-						addToCache(assetsCache, request, res.clone());
-						return res;
-					}
-				)
-			})
-		)
-	}
+
 	// if (requestUrl.origin === location.origin) {
 	// 	if (requestUrl.pathname === '/') {
 	// 		event.respondWith(caches.match('/skeleton'));
