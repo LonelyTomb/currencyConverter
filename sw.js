@@ -1,0 +1,96 @@
+const version = 'v2';
+const coreCache = `core-${version}`;
+const curreciesCache = `currencies-${version}`;
+const assetsCache = `assets-${version}`;
+const coreCacheurls = [
+	'uikit.min.css',
+	'app.js',
+	'app.css',
+	'uikit.min.js'
+];
+
+const addToCache = (cacheName, req, res) =>
+	caches.open(cacheName).then(cache => {
+		cache.put(req, res);
+	});
+
+
+self.addEventListener('install', event => {
+	event.waitUntil(
+		caches.open(coreCache)
+		      .then(cache => {
+			      cache.addAll(coreCacheurls)
+			           .then(() => {
+				           console.log('Cached')
+			           })
+		      })
+	)
+});
+
+self.addEventListener('fetch', (event) => {
+	const request = event.request;
+	const headers = request.headers.get('Accept');
+	const requestUrl = new URL(request.url);
+
+	/*
+	Non HTML requests
+	 */
+	if (headers.indexOf('text/html') === -1) {
+		event.respondWith(
+			caches.match(request).then(response => {
+					return response || fetch(request).then(res => {
+							addToCache(assetsCache, request, res.clone());
+							return res;
+						}
+					)
+				}
+			)
+		)
+	}
+	/*
+	HTML Requests
+	 */
+	// if (headers.indexOf('text/html') === -1) {
+	// 	if (requestUrl.origin === location.origin) {
+	// 		if (requestUrl.pathname === '/') {
+	// 			event.respondWith(caches.match('/skeleton'));
+	// 			return
+	// 		}
+	// 	}
+	// }
+	// if (requestUrl.origin === location.origin) {
+	// 	if (requestUrl.pathname === '/') {
+	// 		event.respondWith(caches.match('/skeleton'));
+	// 		return
+	// 	}
+	// }
+	//
+	// event.respondWith(
+	// 	caches.match(event.request).then(response => {
+	// 		if (response) return response;
+	// 		return fetch(event.request)
+	// 	})
+	// )
+});
+//
+self.addEventListener('message', event => {
+	if (event.data.action === 'skipWaiting') {
+		return self.skipWaiting()
+	}
+});
+
+// self.addEventListener('activate', event => {
+// 	event.waitUntil(
+// 		caches.keys().then(
+// 			cachesNames => {
+// 				return Promise.all(
+// 					cachesNames.filter(cacheName => {
+// 						return cacheName.startsWith('currencies-') && cacheName !== coreCache
+// 					}).map(cacheName => {
+// 						return caches.delete(cacheName)
+// 					})
+// 				)
+// 			}
+// 		)
+// 	)
+// })
