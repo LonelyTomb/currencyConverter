@@ -1,7 +1,4 @@
 const el = e => document.querySelector(e);
-const insertHTML = (e) => {
-
-}
 const getFromCurrencyName = () => {
 	return el("#fromCurrency").value;
 };
@@ -30,32 +27,13 @@ const convertCurrency = (amount, fromCurrency, toCurrency, cb) => {
 		+ query + '&compact=ultra';
 
 	fetch(url).then(res => res.json);
-	// https.get(url, function(res){
-	//     var body = '';
-	//
-	//     res.on('data', function(chunk){
-	//         body += chunk;
-	//     });
-	//
-	//     res.on('end', function(){
-	//         try {
-	//           var jsonObj = JSON.parse(body);
-	//
-	//           var val = jsonObj[query];
-	//           if (val) {
-	//             var total = val * amount;
-	//             cb(null, Math.round(total * 100) / 100);
-	//           } else {
-	//             var err = new Error("Value not found for " + query);
-	//             console.log(err);
-	//             cb(err);
-	//           }
-	//         } catch(e) {
-	//           console.log("Parse error: ", e);
-	//           cb(e);
-	//         }
-
-}
+};
+let dbPromise = idb.open('currencyConverter', 1, (upgradeDb) => {
+	switch (upgradeDb.oldVersion) {
+		case 0:
+			upgradeDb.createObjectStore('countries', { keyPath: 'currencyId' })
+	}
+});
 
 let _updateReady = (sw) => {
 	UIkit.modal.confirm('New Version Available')
@@ -66,6 +44,20 @@ let _updateReady = (sw) => {
 		     //  Reject
 	     })
 };
+const a = new Promise((resolve, reject) => {
+	const a = fetch('https://free.currencyconverterapi.com/api/v5/countries');
+	setTimeout(() => {
+		resolve(a);
+	}, 5000);
+	setTimeout(() => {
+		reject('a');
+	}, 5000);
+});
+a.then(res => {
+	console.log(res.json());
+}).catch(err => {
+	console.log(err);
+});
 
 let _trackInstalling = (sw) => {
 	sw.addEventListener('statechange', () => {
@@ -93,7 +85,7 @@ if ('serviceWorker' in navigator) {
 		}
 	).catch(error => {
 		console.log('fail', error)
-	})
+	});
 	navigator.serviceWorker.addEventListener('controllerchange', () => {
 		window.location.reload()
 	})
@@ -101,10 +93,9 @@ if ('serviceWorker' in navigator) {
 (() => {
 	fetch('https://free.currencyconverterapi.com/api/v5/countries').then(res => res.json()).then(res => {
 			let html = '';
-			for (let country of Object.values(res.results)) {
-				console.log(country);
+			Object.values(res.results).forEach(country => {
 				html += `<option value="${country.currencyId}">${country.currencySymbol} ${country.currencyName}</option>`;
-			}
+			});
 			el("#fromCurrency").insertAdjacentHTML('afterbegin', html);
 			el("#toCurrency").insertAdjacentHTML('afterbegin', html);
 			html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;

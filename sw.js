@@ -1,4 +1,4 @@
-const version = 'v4';
+const version = 'v2';
 
 const assetsCache = `assets-${version}`;
 const coreCacheurls = [
@@ -6,6 +6,7 @@ const coreCacheurls = [
 	'app.js',
 	'/index.html',
 	'app.css',
+	'idb.js',
 	'uikit.min.js'
 ];
 
@@ -31,11 +32,17 @@ self.addEventListener('fetch', (event) => {
 	const request = event.request;
 	const headers = request.headers.get('Accept');
 	const requestUrl = new URL(request.url);
-
+	console.log(requestUrl);
+	console.log(request);
+	// console.log(requestUrl.hostname);
 	/*
 	Non HTML requests
 	 */
 	if (headers.indexOf('text/html') === -1) {
+		// Don't cache  currencyconverterapi urls
+		if (requestUrl.hostname === 'free.currencyconverterapi.com') {
+			return fetch(request);
+		}
 		event.respondWith(
 			caches.match(request).then(response => {
 					return response || fetch(request).then(res => {
@@ -56,7 +63,7 @@ self.addEventListener('fetch', (event) => {
 			if (requestUrl.pathname === '/') {
 				return event.respondWith(caches.match('/index.html')) || fetch(request);
 			}
-		}else{
+		} else {
 			event.respondWith(
 				caches.match(request).then(response => {
 					return response || fetch(request).then(res => {
@@ -66,23 +73,9 @@ self.addEventListener('fetch', (event) => {
 					)
 				})
 			)
-				}
 		}
+	}
 
-
-	// if (requestUrl.origin === location.origin) {
-	// 	if (requestUrl.pathname === '/') {
-	// 		event.respondWith(caches.match('/skeleton'));
-	// 		return
-	// 	}
-	// }
-	//
-	// event.respondWith(
-	// 	caches.match(event.request).then(response => {
-	// 		if (response) return response;
-	// 		return fetch(event.request)
-	// 	})
-	// )
 });
 //
 self.addEventListener('message', event => {
@@ -96,7 +89,7 @@ self.addEventListener('activate', event => {
 		caches.keys().then(
 			cachesNames => {
 				return Promise.all(
-					cachesNames.filter(cacheName => {
+					cachesNames.filter((cacheName) => {
 						return cacheName.startsWith('assets-') && cacheName !== assetsCache
 					}).map(cacheName => {
 						return caches.delete(cacheName)
@@ -105,4 +98,4 @@ self.addEventListener('activate', event => {
 			}
 		)
 	)
-})
+});
