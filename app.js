@@ -35,9 +35,8 @@ const fetchCountries = (countries) => {
 	el("#fromCurrency").insertAdjacentHTML('afterbegin', html);
 	el("#toCurrency").insertAdjacentHTML('afterbegin', html);
 
-	html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;
+	html = `${getFromCurrencyValue()} ${getFromCurrencyId()} equals ${getToCurrencyValue()} ${getToCurrencyId()}`;
 	el('.results').innerText = html;
-
 	el("#fromCurrency").addEventListener('change', () => {
 		html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;
 		el('.results').innerText = html;
@@ -53,20 +52,24 @@ const convertCurrency = (amount, fromCurrency, toCurrency) => {
 	fromCurrency = encodeURIComponent(fromCurrency);
 	toCurrency = encodeURIComponent(toCurrency);
 	const query = fromCurrency + '_' + toCurrency;
-	return `https://free.currencyconverterapi.com/api/v5/convert?q=${query}&compact=ultra`;
+	return { url: `https://free.currencyconverterapi.com/api/v5/convert?q=${query}&compact=ultra`, query: query };
 
 };
 /*
 IndexedDb initialization
  */
-const dbPromise = idb.open('currencyConverter', 2, (upgradeDb) => {
+const dbPromise = idb.open('currencyConverter', 3, (upgradeDb) => {
 	switch (upgradeDb.oldVersion) {
 		case 0:
 			upgradeDb.createObjectStore('countries', { keyPath: 'currencyId' });
 		case 1:
 			let countriesStore = upgradeDb.transaction.objectStore('countries');
-			countriesStore.createIndex('country', 'name');
-			countriesStore.createIndex('country-code', 'currencyId')
+			countriesStore.createIndex('country', 'currencyName');
+			countriesStore.createIndex('country-code', 'currencyId');
+		case 2:
+			upgradeDb.createObjectStore('conversionRates', { keyPath: 'query' });
+			let ratesStore = upgradeDb.transaction.objectStore('conversionRates');
+			ratesStore.createIndex('rates', 'query');
 	}
 });
 /*
@@ -134,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				});
 				dbPromise.then(db => {
 					const countries = db.transaction('countries', 'readwrite').objectStore('countries');
-					const countriesIndex = countries.index('country-code');
+					const countriesIndex = countries.index('country');
 					countriesIndex.getAll().then(currencies => {
 						fetchCountries(currencies);
 					})
@@ -143,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		).catch(() => {
 		dbPromise.then(db => {
 			const countries = db.transaction('countries').objectStore('countries');
-			const countriesIndex = countries.index('country-code');
+			const countriesIndex = countries.index('country');
 			countriesIndex.getAll().then(currencies => {
 				fetchCountries(currencies);
 			})
@@ -152,12 +155,28 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 
 	el('.convert').addEventListener('click', (e) => {
-		const url = convertCurrency(getFromCurrencyValue(), getFromCurrencyId(), getToCurrencyId());
+		const { url, query } = convertCurrency(getFromCurrencyValue(), getFromCurrencyId(), getToCurrencyId());
 		fetch(url).then(res => res.json())
 		          .then(data => {
 			          let rate = Object.values(data).toString();
 			          let result = Math.round((rate * getFromCurrencyValue() * 100)) / 100;
-			          console.log(result);
+			          el('#toCurrencyValue').value = result;
+			          el('.results').innerText = `${getFromCurrencyValue()} ${getFromCurrencyId()} equals ${getToCurrencyValue()} ${getToCurrencyId()}`;
+
+			          dbPromise.then(db => {
+				          const rates = db.transaction('conversionRates', 'readwrite').objectStore('conversionRates');
+				          rates.put({ query: query, value: rate });
+				          const countries = db.transaction('countries').objectStore('countries');
+				          countries.get(getToCurrencyId()).then((res) => {
+					          let card = document.createElement('div');
+					          card.setAttribute('class', "uk-card uk-card-default uk-card-body uk-width-1-3" +
+						          " uk-margin-auto uk-padding-small");
+					          card.setAttribute('id', "conversionResults");
+					          card.innerText = `${res.currencySymbol}${result}`;
+					          el('.rate').removeChild(el('#conversionResults'));
+					          el('.rate').appendChild(card);
+				          })
+			          });
 		          });
 		e.preventDefault();
 	});
