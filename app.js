@@ -128,7 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	fetch('https://free.currencyconverterapi.com/api/v5/countries')
 		.then(res => res.json())
 		.then(res => {
-
 				Object.values(res.results).forEach(country => {
 					dbPromise.then(db => {
 						const countries = db.transaction('countries', 'readwrite').objectStore('countries');
@@ -165,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			          dbPromise.then(db => {
 				          const rates = db.transaction('conversionRates', 'readwrite').objectStore('conversionRates');
-				          rates.put({ query: query, value: rate });
+				          rates.put({ query: query, value: data });
 				          const countries = db.transaction('countries').objectStore('countries');
 				          countries.get(getToCurrencyId()).then((res) => {
 					          let card = document.createElement('div');
