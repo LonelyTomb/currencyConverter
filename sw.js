@@ -1,4 +1,4 @@
-const version = 'v2';
+const version = 'v5';
 
 const assetsCache = `assets-${version}`;
 const coreCacheurls = [
@@ -32,9 +32,6 @@ self.addEventListener('fetch', (event) => {
 	const request = event.request;
 	const headers = request.headers.get('Accept');
 	const requestUrl = new URL(request.url);
-	console.log(requestUrl);
-	console.log(request);
-	// console.log(requestUrl.hostname);
 	/*
 	Non HTML requests
 	 */

@@ -1,4 +1,8 @@
+/*
+DOM element selector
+ */
 const el = e => document.querySelector(e);
+
 const getFromCurrencyName = () => {
 	return el("#fromCurrency").value;
 };
@@ -18,6 +22,32 @@ const getToCurrencyValue = () => {
 	return el("#toCurrencyValue").value;
 };
 
+/*
+Fetch list of available countries to DOM
+ */
+const fetchCountries = (countries) => {
+	let html = '';
+
+	Object.values(countries).forEach(country => {
+		html += `<option value="${country.currencyId}">${country.currencySymbol} ${country.currencyName}</option>`;
+	});
+
+	el("#fromCurrency").insertAdjacentHTML('afterbegin', html);
+	el("#toCurrency").insertAdjacentHTML('afterbegin', html);
+
+	html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;
+	el('.results').innerText = html;
+
+	el("#fromCurrency").addEventListener('change', () => {
+		html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;
+		el('.results').innerText = html;
+	});
+	el("#toCurrency").addEventListener('change', () => {
+		html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;
+		el('.results').innerText = html;
+	})
+};
+
 const convertCurrency = (amount, fromCurrency, toCurrency, cb) => {
 
 	fromCurrency = encodeURIComponent(fromCurrency);
@@ -28,14 +58,22 @@ const convertCurrency = (amount, fromCurrency, toCurrency, cb) => {
 
 	fetch(url).then(res => res.json);
 };
-let dbPromise = idb.open('currencyConverter', 1, (upgradeDb) => {
+/*
+IndexedDb initialization
+ */
+const dbPromise = idb.open('currencyConverter', 2, (upgradeDb) => {
 	switch (upgradeDb.oldVersion) {
 		case 0:
-			upgradeDb.createObjectStore('countries', { keyPath: 'currencyId' })
+			upgradeDb.createObjectStore('countries', { keyPath: 'currencyId' });
+		case 1:
+			let countriesStore = upgradeDb.transaction.objectStore('countries');
+			countriesStore.createIndex('country', 'name');
 	}
 });
-
-let _updateReady = (sw) => {
+/*
+Update Service Worker Function
+ */
+const _updateReady = (sw) => {
 	UIkit.modal.confirm('New Version Available')
 	     .then(() => {
 		     //  Accept
@@ -44,29 +82,20 @@ let _updateReady = (sw) => {
 		     //  Reject
 	     })
 };
-const a = new Promise((resolve, reject) => {
-	const a = fetch('https://free.currencyconverterapi.com/api/v5/countries');
-	setTimeout(() => {
-		resolve(a);
-	}, 5000);
-	setTimeout(() => {
-		reject('a');
-	}, 5000);
-});
-a.then(res => {
-	console.log(res.json());
-}).catch(err => {
-	console.log(err);
-});
 
-let _trackInstalling = (sw) => {
+/*
+Monitor SW install state
+ */
+const _trackInstalling = (sw) => {
 	sw.addEventListener('statechange', () => {
 		if (sw.state === 'installed') {
 			return _updateReady(sw)
 		}
 	})
 };
-
+/*
+Register Service Worker
+ */
 if ('serviceWorker' in navigator) {
 	navigator.serviceWorker.register('/sw.js', {
 		scope: '/'
@@ -90,25 +119,30 @@ if ('serviceWorker' in navigator) {
 		window.location.reload()
 	})
 }
-(() => {
-	fetch('https://free.currencyconverterapi.com/api/v5/countries').then(res => res.json()).then(res => {
-			let html = '';
-			Object.values(res.results).forEach(country => {
-				html += `<option value="${country.currencyId}">${country.currencySymbol} ${country.currencyName}</option>`;
-			});
-			el("#fromCurrency").insertAdjacentHTML('afterbegin', html);
-			el("#toCurrency").insertAdjacentHTML('afterbegin', html);
-			html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;
-			el('.results').innerText = html;
 
-			el("#fromCurrency").addEventListener('change', () => {
-				html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;
-				el('.results').innerText = html;
-			});
-			el("#toCurrency").addEventListener('change', () => {
-				html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;
-				el('.results').innerText = html;
+
+(() => {
+	// Fetch Countries
+	fetch('https://free.currencyconverterapi.com/api/v5/countries')
+		.then(res => res.json())
+		.then(res => {
+				Object.values(res.results).forEach(country => {
+					dbPromise.then(db => {
+						let countries = db.transaction('countries', 'readwrite').objectStore('countries');
+						countries.put(country);
+					})
+				});
+				fetchCountries(res.results);
+			}
+		).catch(() => {
+		dbPromise.then(db => {
+			const countries = db.transaction('countries').objectStore('countries');
+			const countriesIndex = countries.index('country');
+			countriesIndex.getAll().then(currencies => {
+				fetchCountries(currencies);
 			})
-		}
-	);
+
+		});
+
+	});
 })();
