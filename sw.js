@@ -1,4 +1,4 @@
-const version = 'v2';
+const version = 'v4';
 
 const assetsCache = `assets-${version}`;
 const coreCacheurls = [
@@ -56,10 +56,10 @@ self.addEventListener('fetch', (event) => {
 	 */
 	if (headers.indexOf('text/html') !== -1) {
 		//Page Skeleton
-		if (requestUrl.origin === location.origin) {
-			if (requestUrl.pathname === '/') {
-				return event.respondWith(caches.match('/index.html')) || fetch(request);
-			}
+		if (requestUrl.pathname === '/') {
+			return event.respondWith(caches.match('/index.html').then(res => {
+				return res || fetch(request);
+			}))
 		} else {
 			event.respondWith(
 				caches.match(request).then(response => {
