@@ -46,14 +46,40 @@ const fetchCountries = (countries) => {
 		el('.results').innerText = html;
 	})
 };
-
-const convertCurrency = (amount, fromCurrency, toCurrency) => {
+/*
+Generate conversion url
+ */
+const convertCurrencyURL = (amount, fromCurrency, toCurrency) => {
 
 	fromCurrency = encodeURIComponent(fromCurrency);
 	toCurrency = encodeURIComponent(toCurrency);
 	const query = fromCurrency + '_' + toCurrency;
 	return { url: `https://free.currencyconverterapi.com/api/v5/convert?q=${query}&compact=ultra`, query: query };
 
+};
+/*
+Convert currency
+ */
+const convertCurrency = (query, data) => {
+	let rate = Object.values(data).toString();
+	let result = Math.round((rate * getFromCurrencyValue() * 100)) / 100;
+	el('#toCurrencyValue').value = result;
+	el('.results').innerText = `${getFromCurrencyValue()} ${getFromCurrencyId()} equals ${getToCurrencyValue()} ${getToCurrencyId()}`;
+
+	dbPromise.then(db => {
+		const rates = db.transaction('conversionRates', 'readwrite').objectStore('conversionRates');
+		rates.put({ query: query, value: data });
+		const countries = db.transaction('countries').objectStore('countries');
+		countries.get(getToCurrencyId()).then((res) => {
+			let card = document.createElement('div');
+			card.setAttribute('class', "uk-card uk-card-default uk-card-body uk-width-1-3" +
+				" uk-margin-auto uk-padding-small");
+			card.setAttribute('id', "conversionResults");
+			card.innerText = `${res.currencySymbol}${result}`;
+			el('.rate').removeChild(el('#conversionResults'));
+			el('.rate').appendChild(card);
+		})
+	});
 };
 /*
 IndexedDb initialization
@@ -102,6 +128,7 @@ if ('serviceWorker' in navigator) {
 	navigator.serviceWorker.register('/sw.js', {
 		scope: '/'
 	}).then(sw => {
+
 			if (sw.waiting) {
 				_updateReady(sw.waiting);
 				return
@@ -124,7 +151,9 @@ if ('serviceWorker' in navigator) {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-	// Fetch Countries
+	/*
+	 Fetch Countries Process
+	  */
 	fetch('https://free.currencyconverterapi.com/api/v5/countries')
 		.then(res => res.json())
 		.then(res => {
@@ -153,30 +182,27 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	});
 
-	el('.convert').addEventListener('click', (e) => {
-		const { url, query } = convertCurrency(getFromCurrencyValue(), getFromCurrencyId(), getToCurrencyId());
-		fetch(url).then(res => res.json())
-		          .then(data => {
-			          let rate = Object.values(data).toString();
-			          let result = Math.round((rate * getFromCurrencyValue() * 100)) / 100;
-			          el('#toCurrencyValue').value = result;
-			          el('.results').innerText = `${getFromCurrencyValue()} ${getFromCurrencyId()} equals ${getToCurrencyValue()} ${getToCurrencyId()}`;
 
-			          dbPromise.then(db => {
-				          const rates = db.transaction('conversionRates', 'readwrite').objectStore('conversionRates');
-				          rates.put({ query: query, value: data });
-				          const countries = db.transaction('countries').objectStore('countries');
-				          countries.get(getToCurrencyId()).then((res) => {
-					          let card = document.createElement('div');
-					          card.setAttribute('class', "uk-card uk-card-default uk-card-body uk-width-1-3" +
-						          " uk-margin-auto uk-padding-small");
-					          card.setAttribute('id', "conversionResults");
-					          card.innerText = `${res.currencySymbol}${result}`;
-					          el('.rate').removeChild(el('#conversionResults'));
-					          el('.rate').appendChild(card);
-				          })
-			          });
-		          });
+	/*
+	Conversion Process
+	 */
+	el('.convert').addEventListener('click', (e) => {
+		const { url, query } = convertCurrencyURL(getFromCurrencyValue(), getFromCurrencyId(), getToCurrencyId());
+		fetch(url)
+			.then(res => res.json())
+			.then(data => {
+				convertCurrency(query, data);
+			})
+			.catch(() => {
+				dbPromise.then(db => {
+					const rates = db.transaction('conversionRates').objectStore('conversionRates');
+					rates.get(query).then((res) => {
+						convertCurrency(query, res.value)
+					}).catch(() => {
+						UIkit.notification({message: '<p>Conversion rate unavailable offline</p>', status: 'warning'})
+					})
+				})
+			});
 		e.preventDefault();
 	});
 });
