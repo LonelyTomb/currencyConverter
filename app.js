@@ -125,9 +125,7 @@ const _trackInstalling = (sw) => {
 Register Service Worker
  */
 if ('serviceWorker' in navigator) {
-	navigator.serviceWorker.register('/sw.js', {
-		scope: '/'
-	}).then(sw => {
+	navigator.serviceWorker.register('sw.js').then(sw => {
 
 			if (sw.waiting) {
 				_updateReady(sw.waiting);
