@@ -48,15 +48,13 @@ const fetchCountries = (countries) => {
 	})
 };
 
-const convertCurrency = (amount, fromCurrency, toCurrency, cb) => {
+const convertCurrency = (amount, fromCurrency, toCurrency) => {
 
 	fromCurrency = encodeURIComponent(fromCurrency);
 	toCurrency = encodeURIComponent(toCurrency);
 	const query = fromCurrency + '_' + toCurrency;
-	const url = 'https://free.currencyconverterapi.com/api/v5/convert?q='
-		+ query + '&compact=ultra';
+	return `https://free.currencyconverterapi.com/api/v5/convert?q=${query}&compact=ultra`;
 
-	fetch(url).then(res => res.json);
 };
 /*
 IndexedDb initialization
@@ -68,6 +66,7 @@ const dbPromise = idb.open('currencyConverter', 2, (upgradeDb) => {
 		case 1:
 			let countriesStore = upgradeDb.transaction.objectStore('countries');
 			countriesStore.createIndex('country', 'name');
+			countriesStore.createIndex('country-code', 'currencyId')
 	}
 });
 /*
@@ -121,28 +120,47 @@ if ('serviceWorker' in navigator) {
 }
 
 
-(() => {
+document.addEventListener('DOMContentLoaded', () => {
 	// Fetch Countries
 	fetch('https://free.currencyconverterapi.com/api/v5/countries')
 		.then(res => res.json())
 		.then(res => {
+
 				Object.values(res.results).forEach(country => {
 					dbPromise.then(db => {
-						let countries = db.transaction('countries', 'readwrite').objectStore('countries');
+						const countries = db.transaction('countries', 'readwrite').objectStore('countries');
 						countries.put(country);
 					})
 				});
-				fetchCountries(res.results);
+				dbPromise.then(db => {
+					const countries = db.transaction('countries', 'readwrite').objectStore('countries');
+					const countriesIndex = countries.index('country-code');
+					countriesIndex.getAll().then(currencies => {
+						fetchCountries(currencies);
+					})
+				})
 			}
 		).catch(() => {
 		dbPromise.then(db => {
 			const countries = db.transaction('countries').objectStore('countries');
-			const countriesIndex = countries.index('country');
+			const countriesIndex = countries.index('country-code');
 			countriesIndex.getAll().then(currencies => {
 				fetchCountries(currencies);
 			})
 
 		});
-
 	});
-})();
+
+	el('.convert').addEventListener('click', (e) => {
+		const url = convertCurrency(getFromCurrencyValue(), getFromCurrencyId(), getToCurrencyId());
+		fetch(url).then(res => res.json())
+		          .then(data => {
+			          let rate = Object.values(data).toString();
+			          let result = Math.round((rate * getFromCurrencyValue() * 100)) / 100;
+			          console.log(result);
+		          });
+		e.preventDefault();
+	});
+});
+
+

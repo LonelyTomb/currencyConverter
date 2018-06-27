@@ -1,4 +1,4 @@
-const version = 'v5';
+const version = 'v1';
 
 const assetsCache = `assets-${version}`;
 const coreCacheurls = [
