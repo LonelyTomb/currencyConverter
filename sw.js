@@ -1,4 +1,4 @@
-const version = 'v4';
+const version = 'v3';
 
 const assetsCache = `assets-${version}`;
 const coreCacheurls = [
@@ -7,7 +7,8 @@ const coreCacheurls = [
 	'/index.html',
 	'app.css',
 	'idb.js',
-	'uikit.min.js'
+	'uikit.min.js',
+	'uikit-icons.min.js'
 ];
 
 const addToCache = (cacheName, req, res) =>

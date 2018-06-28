@@ -3,12 +3,12 @@ DOM element selector
  */
 const el = e => document.querySelector(e);
 
-const getFromCurrencyName = () => {
-	return el("#fromCurrency").value;
-};
-const getToCurrencyName = () => {
-	return el("#toCurrency").value;
-};
+// const getFromCurrencyName = () => {
+// 	return el("#fromCurrency").value;
+// };
+// const getToCurrencyName = () => {
+// 	return el("#toCurrency").value;
+// };
 const getFromCurrencyId = () => {
 	return el("#fromCurrency").value;
 };
@@ -17,9 +17,6 @@ const getToCurrencyId = () => {
 };
 const getFromCurrencyValue = () => {
 	return el("#fromCurrencyValue").value;
-};
-const getToCurrencyValue = () => {
-	return el("#toCurrencyValue").value;
 };
 
 /*
@@ -35,16 +32,10 @@ const fetchCountries = (countries) => {
 	el("#fromCurrency").insertAdjacentHTML('afterbegin', html);
 	el("#toCurrency").insertAdjacentHTML('afterbegin', html);
 
-	html = `${getFromCurrencyValue()} ${getFromCurrencyId()} equals ${getToCurrencyValue()} ${getToCurrencyId()}`;
-	el('.results').innerText = html;
 	el("#fromCurrency").addEventListener('change', () => {
-		html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;
+		html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to  ${getToCurrencyId()}`;
 		el('.results').innerText = html;
 	});
-	el("#toCurrency").addEventListener('change', () => {
-		html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to ${getToCurrencyValue()} ${getToCurrencyId()}`;
-		el('.results').innerText = html;
-	})
 };
 /*
 Generate conversion url
@@ -63,8 +54,8 @@ Convert currency
 const convertCurrency = (query, data) => {
 	let rate = Object.values(data).toString();
 	let result = Math.round((rate * getFromCurrencyValue() * 100)) / 100;
-	el('#toCurrencyValue').value = result;
-	el('.results').innerText = `${getFromCurrencyValue()} ${getFromCurrencyId()} equals ${getToCurrencyValue()} ${getToCurrencyId()}`;
+
+	el('.results').innerText = `${getFromCurrencyValue()} ${getFromCurrencyId()} equals ${result} ${getToCurrencyId()}`;
 
 	dbPromise.then(db => {
 		const rates = db.transaction('conversionRates', 'readwrite').objectStore('conversionRates');
@@ -194,11 +185,16 @@ document.addEventListener('DOMContentLoaded', () => {
 			.catch(() => {
 				dbPromise.then(db => {
 					const rates = db.transaction('conversionRates').objectStore('conversionRates');
-					rates.get(query).then((res) => {
-						convertCurrency(query, res.value)
-					}).catch(() => {
-						UIkit.notification({message: '<p>Conversion rate unavailable offline</p>', status: 'warning'})
-					})
+					rates.get(query)
+					     .then((res) => {
+						     convertCurrency(query, res.value)
+					     })
+					     .catch(() => {
+						     UIkit.notification({
+							     message: '<p>Conversion rate unavailable offline</p>',
+							     status: 'warning'
+						     })
+					     })
 				})
 			});
 		e.preventDefault();
