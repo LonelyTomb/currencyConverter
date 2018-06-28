@@ -1,0 +1,27 @@
+{
+  "name": "Currency Converter",
+  "short_name": "converter",
+  "theme_color": "#000",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF",
+  "lang": "en-US",
+  "description": "A simple currency converter app",
+  "icons": [
+	{
+	  "src": "char_dominator_192.png",
+	  "sizes": "192x192",
+	  "type": "image/png"
+	},
+	{
+	  "src": "char_dominator_144.png",
+	  "sizes": "144x144",
+	  "type": "image/png"
+	},
+	{
+	  "src": "char_dominator_544.png",
+	  "sizes": "544x544",
+	  "type": "image/png"
+	}
+  ]
+}
