@@ -132,7 +132,7 @@ const convertCurrency = (query, data) => {
             card.setAttribute('class', "uk-card uk-card-default uk-card-body uk-width-1-3" +
                 " uk-margin-auto uk-padding-small");
             card.setAttribute('id', "conversionResults");
-            card.innerText = `[${res.currencySymbol}$] {result}`;
+            card.innerText = `[${res.currencySymbol}] ${result}`;
             el('.rate').removeChild(el('#conversionResults'));
             el('.rate').appendChild(card);
         })
