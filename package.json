@@ -2,5 +2,9 @@
   "name": "currencyConverter",
   "version": "1.0.0",
   "main": "app.js",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "eslint-config-airbnb-base": "^13.0.0",
+    "eslint-plugin-import": "^2.13.0"
+  }
 }

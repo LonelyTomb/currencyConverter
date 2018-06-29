@@ -1,73 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Currency Converter</title>
-	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-	<link rel="manifest" href="manifest.json">
-	<link rel="stylesheet" href="uikit.min.css">
-	<!--<link rel="stylesheet" href="app.css">-->
-	<script src="uikit.min.js" async></script>
-	<script src="uikit-icons.min.js" async></script>
-	<script src="idb.js"></script>
-	<script src="app.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Currency Converter</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="uikit.min.css">
+    <!--<link rel="stylesheet" href="app.css">-->
+    <script src="uikit.min.js" async></script>
+    <script src="uikit-icons.min.js" async></script>
+    <script src="idb.js"></script>
+    <script src="app.js"></script>
 
 </head>
+
 <body>
-<main>
-	<article class="uk-article">
-		<h2 class="uk-article-title uk-text-center uk-heading-large uk-padding uk-heading-line uk-background-secondary uk-light">
-			<span>Currency Converter</span></h2>
-		<section class="uk-section uk-section-default uk-background-muted">
-			<p></p>
-			<form class="uk-card uk-card-default uk-margin-auto uk-width-1-2@m uk-card-hover">
-				<div class="uk-card-header uk-background-secondary">
-					<h4 class="uk-text-center uk-card-title uk-text-primary">Convert from One Currency to Another</h4>
-				</div>
-				<div class="uk-card-body">
-					<p class="results"></p>
-					<div class="uk-text-center">
-						<label for="fromCurrencyValue" class="uk-form-label uk-label">Enter Amount</label>
-						<div class="uk-flex uk-flex-row uk-form-controls uk-padding-small">
-							<input type="number" class="uk-input uk-width-2-3@m uk-margin-auto" placeholder="" value="1"
-							       id="fromCurrencyValue">
-						</div>
-					</div>
-					<div class="uk-text-center">
-						<label for="fromCurrency" class="uk-form-label uk-label">From Currency: </label>
-						<div class="uk-flex uk-flex-row uk-form-controls uk-padding-small">
-							<select name="fromCurrency"
-							        id="fromCurrency"
-							        class="uk-select uk-margin-left"></select>
-						</div>
-					</div>
-					<div class="uk-text-center">
-						<i class="uk-icon" uk-icon="icon: chevron-down; ratio: 3"></i>
-					</div>
-					<div class="uk-text-center">
-						<label for="toCurrency" class="uk-form-label uk-label">To Currency: </label>
-						<div class="uk-flex uk-flex-row uk-form-controls uk-padding-small">
-							<!--<input type="text" class="uk-input-text" placeholder="" value="1" id="toCurrencyValue">-->
-							<select name="toCurrency" id="toCurrency" class="uk-select uk-margin-left"></select>
-						</div>
-					</div>
-					<div class="rate uk-text-center">
-						<div class="uk-card uk-card-default uk-card-body uk-width-1-3 uk-margin-auto uk-padding-small uk-invisible"
-						     id="conversionResults">
-						</div>
-					</div>
-				</div>
-				<div class="uk-card-footer">
-					<div class="uk-text-center">
-						<button class="uk-button uk-button-secondary convert uk-box-shadow-bottom" type="button">
+    <main>
+        <article class="uk-article">
+            <h2 class="uk-article-title uk-text-center uk-heading-large uk-padding uk-heading-line uk-background-secondary uk-light">
+                <span>Currency Converter</span></h2>
+            <section class="uk-section uk-section-default uk-background-muted">
+                <p></p>
+                <form class="uk-card uk-card-default uk-margin-auto uk-width-1-2@m uk-card-hover">
+                    <div class="uk-card-header uk-background-secondary">
+                        <h4 class="uk-text-center uk-card-title uk-text-primary">Convert from One Currency to Another</h4>
+                    </div>
+                    <div class="uk-card-body">
+                        <p class="results"></p>
+                        <div class="uk-text-center">
+                            <label for="fromCurrencyValue" class="uk-form-label uk-label">Enter Amount</label>
+                            <div class="uk-flex uk-flex-row uk-form-controls uk-padding-small">
+                                <input type="number" class="uk-input uk-width-2-3@m uk-margin-auto" placeholder="" value="1" id="fromCurrencyValue">
+                            </div>
+                        </div>
+                        <div class="uk-text-center">
+                            <label for="fromCurrency" class="uk-form-label uk-label">From Currency: </label>
+                            <div class="uk-flex uk-flex-row uk-form-controls uk-padding-small">
+                                <select name="fromCurrency" id="fromCurrency" class="uk-select uk-margin-left"></select>
+                            </div>
+                        </div>
+                        <div class="uk-text-center">
+                            <i class="uk-icon" uk-icon="icon: chevron-down; ratio: 3"></i>
+                        </div>
+                        <div class="uk-text-center">
+                            <label for="toCurrency" class="uk-form-label uk-label">To Currency: </label>
+                            <div class="uk-flex uk-flex-row uk-form-controls uk-padding-small">
+                                <!--<input type="text" class="uk-input-text" placeholder="" value="1" id="toCurrencyValue">-->
+                                <select name="toCurrency" id="toCurrency" class="uk-select uk-margin-left"></select>
+                            </div>
+                        </div>
+                        <div class="rate uk-text-center">
+                            <div class="uk-card uk-card-default uk-card-body uk-width-1-3 uk-margin-auto uk-padding-small uk-invisible" id="conversionResults">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="uk-card-footer">
+                        <div class="uk-text-center">
+                            <button class="uk-button uk-button-secondary convert uk-box-shadow-bottom" type="button">
 							Convert
 						</button>
-					</div>
-				</div>
-			</form>
-		</section>
-	</article>
-</main>
+                        </div>
+                    </div>
+                </form>
+            </section>
+        </article>
+    </main>
+    <footer class="uk-section uk-section-secondary uk-padding-small">
+        <p class="uk-text-center">&copy;Victory Garuba | 2018</p>
+    </footer>
 </body>
+
 </html>
