@@ -92,7 +92,7 @@ const fetchCountries = (countries) => {
     let html = '';
 
     Object.values(countries).forEach(country => {
-        html += `<option value="${country.currencyId}">${country.currencySymbol} ${country.currencyName}</option>`;
+        html += `<option value="${country.currencyId}">[${country.currencySymbol}] ${country.currencyName}</option>`;
     });
 
     el("#fromCurrency").insertAdjacentHTML('afterbegin', html);
