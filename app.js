@@ -84,10 +84,10 @@ const getToCurrencyId = () => {
 const getFromCurrencyValue = () => {
     return el("#fromCurrencyValue").value;
 };
-
-/*
-Fetch list of available countries to DOM
- */
+const formatCurrency = (currency, id) => currency.toLocaleString('en-US', { 'currency': id })
+    /*
+    Fetch list of available countries to DOM
+     */
 const fetchCountries = (countries) => {
     let html = '';
 
@@ -99,7 +99,7 @@ const fetchCountries = (countries) => {
     el("#toCurrency").insertAdjacentHTML('afterbegin', html);
 
     el("#fromCurrency").addEventListener('change', () => {
-        html = `${getFromCurrencyValue()} ${getFromCurrencyId()} to  ${getToCurrencyId()}`;
+        html = `${formatCurrency(getFromCurrencyValue(), getFromCurrencyId())} to  ${getToCurrencyId()}`;
         el('.results').innerText = html;
     });
 };
@@ -125,14 +125,18 @@ const convertCurrency = (query, data) => {
 
     dbPromise.then(db => {
         const rates = db.transaction('conversionRates', 'readwrite').objectStore('conversionRates');
+
         rates.put({ query: query, value: data });
         const countries = db.transaction('countries').objectStore('countries');
+
         countries.get(getToCurrencyId()).then((res) => {
             const card = document.createElement('div');
+
             card.setAttribute('class', "uk-card uk-card-default uk-card-body uk-width-1-3" +
                 " uk-margin-auto uk-padding-small");
             card.setAttribute('id', "conversionResults");
-            card.innerText = `[${res.currencySymbol}] ${result}`;
+
+            card.innerText = `[${res.currencySymbol}] ${formatCurrency(result,res.currencyId)}`;
             el('.rate').removeChild(el('#conversionResults'));
             el('.rate').appendChild(card);
         })
