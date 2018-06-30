@@ -1,4 +1,4 @@
-const version = 'v2';
+const version = 'v10';
 
 const assetsCache = `assets-${version}`;
 const coreCacheurls = [
@@ -77,18 +77,26 @@ self.addEventListener('message', event => {
     }
 });
 
+const clearCaches = () => {
+    caches.keys().then(
+        cachesNames => {
+            return Promise.all(
+                cachesNames
+                .filter((cacheName) => {
+                    return !cacheName.endsWith(version)
+                })
+                .map(cacheName => {
+                    return caches.delete(cacheName)
+                })
+            )
+        }
+    )
+}
+
 self.addEventListener('activate', event => {
     event.waitUntil(
-        caches.keys().then(
-            cachesNames => {
-                return Promise.all(
-                    cachesNames.filter((cacheName) => {
-                        return cacheName.startsWith('assets-') && cacheName !== assetsCache
-                    }).map(cacheName => {
-                        return caches.delete(cacheName)
-                    })
-                )
-            }
-        )
+        clearCaches().then(() => {
+            self.clients.claim()
+        })
     )
 });
