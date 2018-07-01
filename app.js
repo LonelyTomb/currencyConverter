@@ -3,7 +3,9 @@
 DOM element selector
  */
 const el = e => document.querySelector(e);
+class currencyConverter {
 
+}
 /*
 IndexedDb initialization
  */
