@@ -157,7 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
     /*
      Fetch Countries Process
       */
-    fetch('https://free.currencyconverterapi.com/api/v5/countries')
+    fetch('https://free.currencyconverterapi.com/api/v5/countries',{
+        mode: 'no-cors' 
+    })
         .then(res => res.json())
         .then(res => {
             Object.values(res.results).forEach(country => {
@@ -190,7 +192,9 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     el('.convert').addEventListener('click', (e) => {
         const { url, query } = convertCurrencyURL(getFromCurrencyValue(), getFromCurrencyId(), getToCurrencyId());
-        fetch(url)
+        fetch(url,{
+            mode: 'no-cors'
+        })
             .then(res => res.json())
             .then(data => {
                 convertCurrency(data.results[query]);
